@@ -1,10 +1,8 @@
 // функции для работы с карточками: функция создания карточки, функции-обработчики событий удаления и лайка карточки;
 
-// @todo: Функция создания карточки
-import { openModalImg } from "./index";
 const cardTemplate = document.querySelector("#card-template").content;
 
-export function createCard(card) {
+export function createCard(card, openModalImg) {
   const cardItem = cardTemplate.querySelector(".places__item").cloneNode(true);
   const img = cardItem.querySelector(".card__image");
   img.src = card.link;

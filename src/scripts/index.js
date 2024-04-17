@@ -4,10 +4,10 @@
 // функция открытия модального окна изображения карточки.
 // код, который отвечает за отображение шести карточек при открытии страницы. <
 
-import "./pages/index.css";
-import "./images/logo.svg";
-import "./images/avatar.jpg";
-import { createCard, deleteCard, likeCard } from "./card";
+import "../pages/index.css";
+import "../images/logo.svg";
+import "../images/avatar.jpg";
+import { createCard } from "./card";
 import { initialCards } from "./cards";
 import {
   openPopupWindow,
@@ -41,7 +41,7 @@ const popupImgCaption = popupTypeImg.querySelector(".popup__caption");
 
 // Вывод карточек на страницу
 initialCards.forEach((card) => {
-  const cardElement = createCard(card);
+  const cardElement = createCard(card, openModalImg);
   cardContainer.append(cardElement);
 });
 
@@ -68,7 +68,7 @@ popups.forEach((element) =>
 popups.forEach((element) => element.classList.add("popup_is-animated"));
 
 // функция открытия модального окна изображения карточки
-export function openModalImg(img, title) {
+function openModalImg(img, title) {
   popupImg.src = img.src;
   popupImg.alt = img.alt;
   popupImgCaption.textContent = title.textContent;
@@ -76,13 +76,13 @@ export function openModalImg(img, title) {
 }
 
 // Обработчик «отправки» формы заполнения инфо профиля
-function handleFormSubmit(evt) {
+function handleFormSubmitProfile(evt) {
   evt.preventDefault();
   profileDescription.textContent = jobProfileInput.value;
   profileTitle.textContent = nameProfileInput.value;
   closePopupWindow(popupTypeEdit);
 }
-formEditProfile.addEventListener("submit", handleFormSubmit);
+formEditProfile.addEventListener("submit", handleFormSubmitProfile);
 
 // Автозаполнение полей
 function fillFormEditProfile() {
@@ -99,7 +99,7 @@ function addNewCard(newCard) {
 function handleFormAddNewCardSubmit(evt) {
   evt.preventDefault();
   const newCardData = { name: nameCardInput.value, link: linkCardInput.value };
-  addNewCard(createCard(newCardData, deleteCard, likeCard, openModalImg));
+  addNewCard(createCard(newCardData, openModalImg));
   formNewCard.reset();
   closePopupWindow(popupTypeNewCard);
 }
