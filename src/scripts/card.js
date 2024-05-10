@@ -1,6 +1,6 @@
 // функции для работы с карточками: функция создания карточки, функции-обработчики событий удаления и лайка карточки;
 
-import { apiRequest } from "./api";
+import { deleteCardServer, addLike, removeLike } from "./api";
 
 const cardTemplate = document.querySelector("#card-template").content;
 
@@ -37,30 +37,22 @@ export function createCard(cardData, ownerId) {
     deleteCardButton.remove();
   } else {
     deleteCardButton.addEventListener("click", () => {
-      deleteCard(cardData.card);
-      cardItem.remove();
+      deleteCardServer(cardData.card)
+        .then((res) => {
+          cardItem.remove();
+        })
+        .catch((err) => {
+          console.log(`Что-то пошло не так. Ошибка: ${err}`);
+        });
     });
   }
   return cardItem;
 }
 
-// Удаление карточки
-export function deleteCard(card) {
-  apiRequest({
-    url: `cards/${card._id}`,
-    method: "DELETE",
-  }).catch((err) => {
-    console.log(`Что-то пошло не так. Ошибка: ${err}`);
-  });
-}
-
 // Лайк карточки
 export function likeCard(card, likeBtn, likeCount) {
   if (likeBtn.classList.contains("card__like-button_is-active")) {
-    apiRequest({
-      url: `cards/likes/${card._id}`,
-      method: "DELETE",
-    })
+    removeLike(card)
       .then((res) => {
         likeBtn.classList.remove("card__like-button_is-active");
         likeCount.textContent = res.likes.length === 0 ? "0" : res.likes.length;
@@ -69,10 +61,7 @@ export function likeCard(card, likeBtn, likeCount) {
         console.log(`Что-то пошло не так. Ошибка: ${err}`);
       });
   } else {
-    apiRequest({
-      url: `cards/likes/${card._id}`,
-      method: "PUT",
-    })
+    addLike(card)
       .then((res) => {
         likeBtn.classList.add("card__like-button_is-active");
         likeCount.textContent = res.likes.length === 0 ? "0" : res.likes.length;

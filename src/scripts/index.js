@@ -7,7 +7,7 @@
 import "../pages/index.css";
 import "../images/logo.svg";
 import "../images/avatar.jpg";
-import { createCard, likeCard, deleteCard } from "./card";
+import { createCard, likeCard } from "./card";
 import {
   openPopupWindow,
   closePopupWindow,
@@ -19,7 +19,14 @@ import {
   validationSettings,
   clearValidation,
 } from "./validation";
-import { apiRequest } from "./api";
+import {
+  getUserInfo,
+  getInitialCards,
+  editProfileInfo,
+  addNewCard,
+  changeUserAvatar,
+} from "./api";
+import { renderLoading } from "./utils";
 
 const cardContainer = document.querySelector(".places__list");
 
@@ -52,16 +59,7 @@ const popupImgCaption = popupTypeImg.querySelector(".popup__caption");
 
 enableValidation(validationSettings);
 
-Promise.all([
-  apiRequest({
-    url: "cards",
-    method: "GET",
-  }),
-  apiRequest({
-    url: "users/me",
-    method: "GET",
-  }),
-])
+Promise.all([getInitialCards(), getUserInfo()])
   .then(([dataCards, dataProfile]) => {
     setInfoProfile(dataProfile);
     setInfoCards(dataCards, dataProfile._id);
@@ -80,7 +78,7 @@ function setInfoProfile(res) {
 function setInfoCards(res, ownerId) {
   res.forEach((card) => {
     cardContainer.append(
-      createCard({ card: card, openModalImg, likeCard, deleteCard }, ownerId)
+      createCard({ card: card, openModalImg, likeCard }, ownerId)
     );
   });
 }
@@ -91,15 +89,7 @@ function handleFormSubmitProfile(evt) {
 
   const saveButtonProfile = formEditProfile.querySelector(".button");
   renderLoading(saveButtonProfile, true);
-
-  apiRequest({
-    url: "users/me",
-    method: "PATCH",
-    body: {
-      name: nameProfileInput.value,
-      about: jobProfileInput.value,
-    },
-  })
+  editProfileInfo(nameProfileInput.value, jobProfileInput.value)
     .then((res) => {
       setInfoProfile(res);
       closePopupWindow(popupTypeEdit);
@@ -119,19 +109,11 @@ function handleFormAddNewCardSubmit(evt) {
 
   const saveButtonNewCard = formNewCard.querySelector(".button");
   renderLoading(saveButtonNewCard, true);
-
-  apiRequest({
-    url: "cards",
-    method: "POST",
-    body: {
-      name: nameCardInput.value,
-      link: linkCardInput.value,
-    },
-  })
+  addNewCard(nameCardInput.value, linkCardInput.value)
     .then((card) => {
       cardContainer.prepend(
         createCard(
-          { card: card, openModalImg, likeCard, deleteCard },
+          { card: card, openModalImg, likeCard },
           profileInfo.dataset.userId
         )
       );
@@ -153,14 +135,7 @@ function handleFormSubmitAvatar(evt) {
 
   const saveButtonAvatar = formAvatar.querySelector(".button");
   renderLoading(saveButtonAvatar, true);
-
-  apiRequest({
-    url: "users/me/avatar",
-    method: "PATCH",
-    body: {
-      avatar: linkInputAvatar.value,
-    },
-  })
+  changeUserAvatar(linkInputAvatar.value)
     .then((res) => {
       setInfoProfile(res);
       closePopupWindow(popupTypeAvatar);
@@ -216,15 +191,4 @@ function openModalImg(img, title) {
 function fillFormEditProfile() {
   nameProfileInput.value = profileTitle.textContent;
   jobProfileInput.value = profileDescription.textContent;
-}
-
-//процесс загрузки
-function renderLoading(button, isLoading) {
-  if (isLoading) {
-    button.textContent = "Сохранение...";
-    button.disabled = true;
-  } else {
-    button.textContent = "Сохранить";
-    button.disabled = false;
-  }
 }
